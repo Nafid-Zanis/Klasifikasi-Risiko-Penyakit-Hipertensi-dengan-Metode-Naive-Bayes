@@ -69,7 +69,7 @@ if st.button('Tes Prediksi'):
             hipertensi_prediction = hipertensi_model.predict([input_data])
 
             # Menentukan hasil diagnosis
-            if hipertensi_prediction[0] == 1:
+            if hipertensi_prediction[0] == 0:
                 hipertensi_diagnosis = 'Pasien terkena risiko hipertensi tekanan rendah'
             else:
                 hipertensi_diagnosis = 'Pasien terkena risiko hipertensi tekanan tinggi'
