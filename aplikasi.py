@@ -24,7 +24,7 @@ with col2:
     sysBP = st.text_input('Input Tekanan Darah Sistolik')
 
 with col1:
-    currentSmoker = st.selectbox('Riwayat Merokok', options=['Ya', 'Tidak'])
+    currentSmoker = st.selectbox('Perokok Aktif?', options=['Ya', 'Tidak'])
     currentSmoker = 1 if currentSmoker == 'Ya' else 0
 
 with col2:
@@ -68,14 +68,28 @@ if st.button('Tes Prediksi'):
             # Prediksi dengan model dan mendapatkan probabilitas
             hipertensi_prediction = hipertensi_model.predict([input_data])
 
-            # Menentukan hasil diagnosis
+             # Tentukan diagnosis dan warnanya
             if hipertensi_prediction[0] == 0:
                 hipertensi_diagnosis = 'Pasien terkena risiko hipertensi tekanan rendah'
+                warna = '#4CAF50'  # hijau
             else:
                 hipertensi_diagnosis = 'Pasien terkena risiko hipertensi tekanan tinggi'
+                warna = '#F44336'  # merah
 
-            # Menampilkan hasil diagnosis dan probabilitas
-            st.success(hipertensi_diagnosis)
+            # Tampilkan hasil diagnosis dengan background berwarna dan padding
+            st.markdown(
+                f"""
+                <div style='
+                    background-color:{warna};
+                    padding:10px;
+                    border-radius:10px;
+                    color:white;
+                    font-size:18px;
+                    text-align:center;
+                '>{hipertensi_diagnosis}</div>
+                """,
+                unsafe_allow_html=True
+            )
 
         except Exception as e:
             st.error(f'Terjadi error saat prediksi: {e}')
