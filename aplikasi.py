@@ -1,95 +1,121 @@
 import pickle
 import streamlit as st
 
-# membaca model
+# Load model
 hipertensi_model = pickle.load(open('model.pkl', 'rb'))
 
-# judul web
-st.title("Klasifikasi Risiko Penyakit Hipertensi")
+# Judul aplikasi
+st.title("🩺 Klasifikasi Risiko Penyakit Hipertensi")
+st.markdown(
+    "Masukkan data pasien di bawah ini untuk mengetahui risiko terkena hipertensi.")
 
-# membagi kolom
-col1, col2 = st.columns(2)
+# Form input
+with st.form("form_hipertensi"):
+    col1, col2 = st.columns(2)
 
-with col1:
-    sex = st.selectbox('Jenis Kelamin', options=['Laki-laki', 'Perempuan'])
-    sex = 1 if sex == 'Laki-laki' else 0
+    with col1:
+        sex = st.selectbox('Jenis Kelamin', options=['Laki-laki', 'Perempuan'])
+        sex = 1 if sex == 'Laki-laki' else 0
 
-with col2:
-    totChol = st.text_input('Input Total Kolesterol')
+        age = st.number_input('Usia (tahun)', min_value=0,
+                              max_value=120, step=1)
 
-with col1:
-    age = st.text_input('Input Usia')
+        currentSmoker = st.selectbox('Perokok Aktif?', options=['Ya', 'Tidak'])
+        currentSmoker = 1 if currentSmoker == 'Ya' else 0
 
-with col2:
-    sysBP = st.text_input('Input Tekanan Darah Sistolik')
+        cigsPerDay = st.number_input(
+            'Batang Rokok per Hari', min_value=0, step=1, help="0 jika tidak merokok")
 
-with col1:
-    currentSmoker = st.selectbox('Perokok Aktif?', options=['Ya', 'Tidak'])
-    currentSmoker = 1 if currentSmoker == 'Ya' else 0
+        BPMeds = st.selectbox(
+            'Menggunakan Obat Tekanan Darah?', options=['Ya', 'Tidak'])
+        BPMeds = 1 if BPMeds == 'Ya' else 0
 
-with col2:
-    diaBP = st.text_input('Input Tekanan Darah Diastolik')
+        diabetes = st.selectbox('Riwayat Diabetes?', options=['Ya', 'Tidak'])
+        diabetes = 1 if diabetes == 'Ya' else 0
 
-with col1:
-    cigsPerDay = st.text_input('Input Batang Rokok per Hari')
+    with col2:
+        totChol = st.number_input(
+            'Total Kolesterol (mg/dL)', min_value=50.0, max_value=600.0, format="%.1f")
 
-with col2:
-    BMI = st.text_input('Input Body Massa Indeks(BMI)')
+        sysBP = st.number_input(
+            'Tekanan Darah Sistolik (mmHg)', min_value=70.0, max_value=300.0, format="%.1f")
 
-with col1:
-    BPMeds = st.selectbox(
-        'Menggunakan Obat Tekanan Darah?', options=['Ya', 'Tidak'])
-    BPMeds = 1 if BPMeds == 'Ya' else 0
+        diaBP = st.number_input(
+            'Tekanan Darah Diastolik (mmHg)', min_value=40.0, max_value=200.0, format="%.1f")
 
-with col2:
-    heartRate = st.text_input('Input Detak Jantung')
+        BMI = st.number_input('Body Mass Index (BMI)',
+                              min_value=10.0, max_value=50.0, format="%.2f")
 
-with col1:
-    diabetes = st.selectbox('Riwayat Diabetes?', options=['Ya', 'Tidak'])
-    diabetes = 1 if diabetes == 'Ya' else 0
+        heartRate = st.number_input(
+            'Detak Jantung (bpm)', min_value=30, max_value=200)
 
-with col2:
-    glucose = st.text_input('Input Kadar Glukosa')
+        glucose = st.number_input(
+            'Kadar Glukosa (mg/dL)', min_value=50.0, max_value=500.0, format="%.1f")
 
-# kode untuk prediksi
-hipertensi_diagnosis = ''
+    # Tombol submit
+    submitted = st.form_submit_button("Tes Prediksi")
 
-if st.button('Tes Prediksi'):
-    if '' in [age, cigsPerDay, totChol, sysBP, diaBP, BMI, heartRate, glucose]:
-        st.warning('Semua input numerik harus diisi ya!')
-    else:
+    if submitted:
         try:
-            # Input data yang sudah diubah menjadi tipe float
             input_data = [float(sex), float(age), float(currentSmoker), float(cigsPerDay),
                           float(BPMeds), float(diabetes), float(
                               totChol), float(sysBP),
                           float(diaBP), float(BMI), float(heartRate), float(glucose)]
 
-            # Prediksi dengan model dan mendapatkan probabilitas
-            hipertensi_prediction = hipertensi_model.predict([input_data])
+            # Prediksi
+            prediction = hipertensi_model.predict([input_data])
+            probabilities = hipertensi_model.predict_proba([input_data])
+            predicted_proba = probabilities[0][prediction[0]]
 
-             # Tentukan diagnosis dan warnanya
-            if hipertensi_prediction[0] == 0:
-                hipertensi_diagnosis = 'Pasien terkena risiko hipertensi tekanan rendah'
+            # Menentukan hasil prediksi
+            if prediction[0] == 0:
+                diagnosis = '⚠️ Pasien terkena risiko hipertensi tekanan rendah'
+                saran = """
+                **Saran:**
+                - Periksa kemungkinan dehidrasi atau masalah hormonal.
+                - Cukupi asupan garam dan cairan sesuai anjuran dokter.
+                - Hindari berdiri terlalu cepat untuk mencegah pusing.
+                - Konsultasi ke tenaga medis jika tekanan rendah berulang.
+                """
                 warna = '#4CAF50'  # hijau
             else:
-                hipertensi_diagnosis = 'Pasien terkena risiko hipertensi tekanan tinggi'
+                diagnosis = '⚠️ Pasien terkena risiko hipertensi tekanan tinggi'
+                saran = """
+                    **Saran:**
+                    - Kurangi konsumsi garam, lemak jenuh, dan makanan olahan.
+                    - Rutin olahraga seperti jalan cepat 30 menit per hari.
+                    - Hindari merokok dan konsumsi alkohol.
+                    - Jaga berat badan ideal dan rutin kontrol tekanan darah.
+                    - Konsultasikan pengobatan ke dokter.
+                    """
                 warna = '#F44336'  # merah
 
-            # Tampilkan hasil diagnosis dengan background berwarna dan padding
+            # Menampilkan hasil diagnosis dengan probabilitas
             st.markdown(
                 f"""
                 <div style='
                     background-color:{warna};
-                    padding:10px;
+                    padding:15px;
                     border-radius:10px;
                     color:white;
                     font-size:18px;
                     text-align:center;
-                '>{hipertensi_diagnosis}</div>
+                    font-weight:bold;
+                '>
+                    {diagnosis}<br><br>
+                    Probabilitas: {predicted_proba:.2%}<br></br>
+                </div>
                 """,
                 unsafe_allow_html=True
             )
 
+            # Tambahan info (opsional)
+            st.info("Probabilitas semua kelas:")
+            st.write(f"- Tekanan Rendah: {probabilities[0][0]:.2%}")
+            st.write(f"- Tekanan Tinggi: {probabilities[0][1]:.2%}")
+
+            st.subheader("📌 Rekomendasi")
+            st.markdown(saran)
+
         except Exception as e:
-            st.error(f'Terjadi error saat prediksi: {e}')
+            st.error(f'Terjadi kesalahan saat prediksi: {e}')
