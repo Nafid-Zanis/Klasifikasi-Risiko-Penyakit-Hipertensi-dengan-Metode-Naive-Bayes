@@ -69,7 +69,7 @@ with st.form("form_hipertensi"):
 
             # Menentukan hasil prediksi
             if prediction[0] == 0:
-                diagnosis = '⚠️ Pasien terkena risiko hipertensi tekanan rendah'
+                diagnosis = '⚠️ Pasien terkena hipertensi risiko rendah'
                 saran = """
                 **Saran:**
                 - Periksa kemungkinan dehidrasi atau masalah hormonal.
