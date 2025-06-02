@@ -1,4 +1,4 @@
-import pickle
+iimport pickle
 import streamlit as st
 
 # Load model
@@ -69,7 +69,7 @@ with st.form("form_hipertensi"):
 
             # Menentukan hasil prediksi
             if prediction[0] == 0:
-                diagnosis = '⚠️ Pasien terkena hipertensi risiko rendah'
+                diagnosis = '⚠️ Pasien beresiko rendah hipertensi'
                 saran = """
                 **Saran:**
                 - Periksa kemungkinan dehidrasi atau masalah hormonal.
@@ -79,7 +79,7 @@ with st.form("form_hipertensi"):
                 """
                 warna = '#4CAF50'  # hijau
             else:
-                diagnosis = '⚠️ Pasien terkena risiko hipertensi tekanan tinggi'
+                diagnosis = '⚠️ Pasien beresiko tingi hipertensi'
                 saran = """
                     **Saran:**
                     - Kurangi konsumsi garam, lemak jenuh, dan makanan olahan.
