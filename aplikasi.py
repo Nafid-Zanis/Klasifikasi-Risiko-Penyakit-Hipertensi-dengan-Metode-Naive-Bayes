@@ -13,6 +13,7 @@ st.sidebar.title("ℹ️ Info Model")
 st.sidebar.markdown(f"""
 **Akurasi Model:** {MODEL_ACCURACY * 100:.2f}%  
 **ROC AUC Score:** {MODEL_AUC:.2f}  
+""")
 
 # Judul aplikasi
 st.title("🩺 Klasifikasi Risiko Penyakit Hipertensi")
