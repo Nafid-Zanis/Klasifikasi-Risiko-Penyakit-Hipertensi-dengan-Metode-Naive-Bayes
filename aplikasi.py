@@ -1,4 +1,4 @@
-iimport pickle
+import pickle
 import streamlit as st
 
 # Load model
@@ -17,8 +17,8 @@ with st.form("form_hipertensi"):
         sex = st.selectbox('Jenis Kelamin', options=['Laki-laki', 'Perempuan'])
         sex = 1 if sex == 'Laki-laki' else 0
 
-        age = st.number_input('Usia (tahun)', min_value=0,
-                              max_value=120, step=1)
+        age = st.number_input('Usia (tahun)', min_value=32,
+                              max_value=70, step=1)
 
         currentSmoker = st.selectbox('Perokok Aktif?', options=['Ya', 'Tidak'])
         currentSmoker = 1 if currentSmoker == 'Ya' else 0
@@ -35,22 +35,22 @@ with st.form("form_hipertensi"):
 
     with col2:
         totChol = st.number_input(
-            'Total Kolesterol (mg/dL)', min_value=50.0, max_value=600.0, format="%.1f")
+            'Total Kolesterol (mg/dL)', min_value=50.0, max_value=346.0, format="%.1f")
 
         sysBP = st.number_input(
-            'Tekanan Darah Sistolik (mmHg)', min_value=70.0, max_value=300.0, format="%.1f")
+            'Tekanan Darah Sistolik (mmHg)', min_value=83.0, max_value=184.0, format="%.1f")
 
         diaBP = st.number_input(
-            'Tekanan Darah Diastolik (mmHg)', min_value=40.0, max_value=200.0, format="%.1f")
+            'Tekanan Darah Diastolik (mmHg)', min_value=52.0, max_value=112.0, format="%.1f")
 
         BMI = st.number_input('Body Mass Index (BMI)',
-                              min_value=10.0, max_value=50.0, format="%.2f")
+                              min_value=10.0, max_value=60.0, format="%.2f")
 
         heartRate = st.number_input(
             'Detak Jantung (bpm)', min_value=30, max_value=200)
 
         glucose = st.number_input(
-            'Kadar Glukosa (mg/dL)', min_value=50.0, max_value=500.0, format="%.1f")
+            'Kadar Glukosa (mg/dL)', min_value=50.0, max_value=126.0, format="%.1f")
 
     # Tombol submit
     submitted = st.form_submit_button("Tes Prediksi")
