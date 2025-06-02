@@ -1,5 +1,6 @@
 import pickle
 import streamlit as st
+import numpy as np
 
 # Load model
 hipertensi_model = pickle.load(open('model.pkl', 'rb'))
@@ -63,23 +64,33 @@ with st.form("form_hipertensi"):
                           float(BPMeds), float(diabetes), float(totChol), float(sysBP),
                           float(diaBP), float(BMI), float(heartRate), float(glucose)]
 
+            # Prediksi kelas
             prediction = hipertensi_model.predict([input_data])
+            
+            # Probabilitas untuk semua kelas
             probabilities = hipertensi_model.predict_proba([input_data])
-            predicted_proba = probabilities[0][prediction[0]]
-            confidence = predicted_proba * 100
+            
+            # ✅ PERBAIKAN: Confidence adalah probabilitas maksimum
+            confidence = np.max(probabilities[0]) * 100
+            
+            # Dapatkan kelas dengan probabilitas tertinggi
+            predicted_class_index = np.argmax(probabilities[0])
+            predicted_class = hipertensi_model.classes_[predicted_class_index]
 
+            # Tentukan diagnosis berdasarkan prediksi
             if prediction[0] == 0:
-                diagnosis = '⚠️ Pasien beresiko rendah hipertensi'
+                diagnosis = '✅ Pasien berisiko rendah hipertensi'
                 warna = '#4CAF50'  # hijau
                 saran = """
                 **Saran:**
-                - Periksa kemungkinan dehidrasi atau masalah hormonal.
-                - Cukupi asupan garam dan cairan sesuai anjuran dokter.
-                - Hindari berdiri terlalu cepat untuk mencegah pusing.
-                - Konsultasi ke tenaga medis jika tekanan rendah berulang.
+                - Pertahankan gaya hidup sehat yang sudah dijalani.
+                - Tetap rutin olahraga dan konsumsi makanan bergizi.
+                - Lakukan pemeriksaan kesehatan rutin setiap 6-12 bulan.
+                - Hindari stres berlebihan dan istirahat yang cukup.
+                - Tetap waspada terhadap faktor risiko lainnya.
                 """
             else:
-                diagnosis = '⚠️ Pasien beresiko tinggi hipertensi'
+                diagnosis = '⚠️ Pasien berisiko tinggi hipertensi'
                 warna = '#F44336'  # merah
                 saran = """
                 **Saran:**
@@ -87,9 +98,10 @@ with st.form("form_hipertensi"):
                 - Rutin olahraga seperti jalan cepat 30 menit per hari.
                 - Hindari merokok dan konsumsi alkohol.
                 - Jaga berat badan ideal dan rutin kontrol tekanan darah.
-                - Konsultasikan pengobatan ke dokter.
+                - Konsultasikan pengobatan ke dokter segera.
                 """
 
+            # Tampilkan hasil prediksi
             st.markdown(
                 f"""
                 <div style='
@@ -108,12 +120,75 @@ with st.form("form_hipertensi"):
                 unsafe_allow_html=True
             )
 
-            st.info("Probabilitas semua kelas:")
-            st.write(f"- Tidak Hipertensi: {probabilities[0][0]:.2%}")
-            st.write(f"- Hipertensi: {probabilities[0][1]:.2%}")
+            # Detail probabilitas semua kelas
+            st.info("📊 Detail Probabilitas:")
+            
+            # Buat kolom untuk menampilkan probabilitas dengan lebih rapi
+            prob_col1, prob_col2 = st.columns(2)
+            
+            with prob_col1:
+                risiko_rendah_prob = probabilities[0][0] * 100
+                st.metric(
+                    label="Risiko Rendah", 
+                    value=f"{risiko_rendah_prob:.2f}%",
+                    delta=None
+                )
+            
+            with prob_col2:
+                risiko_tinggi_prob = probabilities[0][1] * 100
+                st.metric(
+                    label="Risiko Tinggi", 
+                    value=f"{risiko_tinggi_prob:.2f}%",
+                    delta=None
+                )
+
+            # Tampilkan informasi tambahan untuk debugging
+            with st.expander("🔍 Detail Teknis (untuk debugging)"):
+                st.write(f"**Prediksi Array:** {prediction}")
+                st.write(f"**Probabilitas Raw:** {probabilities[0]}")
+                st.write(f"**Kelas Model:** {hipertensi_model.classes_}")
+                st.write(f"**Index Kelas Terprediksi:** {predicted_class_index}")
+                st.write(f"**Kelas Terprediksi:** {predicted_class}")
+                st.write(f"**Confidence Calculation:** max({probabilities[0]}) = {confidence:.4f}%")
 
             st.subheader("📌 Rekomendasi")
             st.markdown(saran)
 
+            # Tambahan: Interpretasi confidence level
+            st.subheader("📈 Interpretasi Tingkat Kepercayaan")
+            if confidence > 90:
+                confidence_level = "Sangat Tinggi"
+                confidence_color = "#4CAF50"
+                confidence_desc = "Model sangat yakin dengan prediksi ini."
+            elif confidence > 70:
+                confidence_level = "Tinggi"
+                confidence_color = "#FF9800"
+                confidence_desc = "Model cukup yakin dengan prediksi ini."
+            elif confidence > 50:
+                confidence_level = "Sedang"
+                confidence_color = "#FFC107"
+                confidence_desc = "Model memiliki kepercayaan sedang terhadap prediksi ini."
+            else:
+                confidence_level = "Rendah"
+                confidence_color = "#F44336"
+                confidence_desc = "Model kurang yakin dengan prediksi ini. Disarankan untuk konsultasi lebih lanjut."
+
+            st.markdown(
+                f"""
+                <div style='
+                    background-color:{confidence_color}20;
+                    border-left: 4px solid {confidence_color};
+                    padding:10px;
+                    border-radius:5px;
+                    margin:10px 0;
+                '>
+                    <strong>Tingkat Kepercayaan: {confidence_level}</strong><br>
+                    {confidence_desc}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
         except Exception as e:
             st.error(f'Terjadi kesalahan saat prediksi: {e}')
+            st.error("Pastikan semua field telah diisi dengan benar.")
